@@ -29,10 +29,6 @@ angular.module('app.routes', ['ionicUIRouter'])
       'tab1': {
         templateUrl: 'templates/groups.html',
         controller: 'groupsCtrl'
-      },
-      'tab3': {
-        templateUrl: 'templates/groups.html',
-        controller: 'groupsCtrl'
       }
     }
   })
