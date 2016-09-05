@@ -1,0 +1,3 @@
+[submodule "www/lib/chat"]
+	path = www/lib/chat
+	url = https://github.com/SkygearIO/chat.git

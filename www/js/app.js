@@ -21,3 +21,15 @@ angular.module('app', ['ionic', 'app.controllers', 'app.routes', 'app.directives
     }
   });
 })
+
+// Config skygear with api end point and api key before angular bootstrapping
+// to ensure all components in angular work with skygear
+skygear.config({
+  endPoint: 'https://ionichat1.skygeario.com/',
+  apiKey: '1f9716a3c7c64ac39c03cfd6f911a5cf',
+}).then(function(client) {
+  console.log('Skygear config success', client);
+  angular.element(document).ready(function() {
+    angular.bootstrap(document, ['app']);
+  });
+});
