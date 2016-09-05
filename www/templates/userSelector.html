@@ -1,0 +1,11 @@
+<ion-modal-view title="User Selector" id="page9">
+    <ion-header-bar>
+        <h1 class="title">Choose User</h1>
+        <button class="button icon ion-close" ng-click="closeModal()"></button>
+    </ion-header-bar>
+    <ion-content padding="false" class="has-header">
+        <ion-list id="userSelector-list8">
+            <ion-item id="userSelector-list-item14" ng-repeat="u in inviteUsers" ng-click="selectUser(u)">{{u.name}}</ion-item>
+        </ion-list>
+    </ion-content>
+</ion-modal-view>

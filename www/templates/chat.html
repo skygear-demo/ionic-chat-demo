@@ -1,0 +1,17 @@
+<ion-view title="{{user.name}}" id="page6" shrink-when-keyboard-shows>
+    <ion-content padding="true" class="has-header has-message-input" scroll-anchor>
+        <ion-list id="chat-list4">
+            <ion-item class="chat-message" ng-repeat="m in conversations[conversationId]" ng-class="{'by-me': currentUser.id === m.createdBy, 'in-progress': m.inProgress}">
+                {{m.body}}
+                <h6>{{m.createdAt | date:'yyyy-MM-dd HH:mm:ss'}}</h6>
+            </ion-item>
+        </ion-list>
+        <div class="spacer" style="width: 300px; height: 30px;"></div>
+    </ion-content>
+    <form id="chat-form4" class="message-input">
+        <label class="item item-input" id="chat-input8">
+            <input type="text" placeholder="Message" ng-model="message">
+        </label>
+        <button id="chat-button5" class="button button-positive  button-block" ng-click="sendMessage(message)">Send</button>
+    </form>
+</ion-view>
