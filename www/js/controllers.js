@@ -76,7 +76,7 @@ function ($scope, $stateParams, Skygear, SkygearChat, $q, $ionicPopup, $state, C
 function ($scope, $stateParams, SkygearChat, Skygear, $ionicModal, $state, $q, Conversations, Users) {
   $scope.conversations = [];
 
-  $ionicModal.fromTemplateUrl('../templates/userSelector.html', {
+  $ionicModal.fromTemplateUrl('templates/userSelector.html', {
     scope: $scope,
     animation: 'slide-in-up',
   }).then(function (modal) {
@@ -86,6 +86,10 @@ function ($scope, $stateParams, SkygearChat, Skygear, $ionicModal, $state, $q, C
   $scope.createDirectConversation = function () {
     $scope.modal.show();
   }
+
+  $scope.closeModal = function () {
+    $scope.modal.hide();
+  };
   
   $scope.selectUser = function (user) {
     SkygearChat.getOrCreateDirectConversation(user._id)
@@ -132,7 +136,9 @@ function ($scope, $stateParams, SkygearChat, Skygear, $ionicModal, $state, $q, C
           var otherUserId = conversation.participant_ids.filter(function (p) {
             return p !== Skygear.currentUser.id;
           })[0];
-          conversation.user = Users.get(otherUserId);
+          Users.get(otherUserId).then(function (user) {
+            conversation.user = user;
+          });
           return conversation;
         });
         $scope.$apply();
@@ -242,7 +248,11 @@ function ($scope, $stateParams, SkygearChat, Skygear, $ionicModal, $ionicScrollD
     });
   };
 
-  $ionicModal.fromTemplateUrl('../templates/userSelector.html', {
+  $scope.closeModal = function () {
+    $scope.modal.hide();
+  };
+
+  $ionicModal.fromTemplateUrl('templates/userSelector.html', {
     scope: $scope,
     animation: 'slide-in-up',
   }).then(function (modal) {
