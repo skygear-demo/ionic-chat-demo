@@ -1,17 +1,20 @@
-<ion-view title="Group" id="page5">
-    <ion-content padding="true" class="has-header">
+<ion-view title="{{conversation.title}}" id="page5">
+    <ion-nav-buttons side="right">
+        <button class="button icon ion-plus" ng-click="showInviteUserModal()"></button>
+    </ion-nav-buttons>
+    <ion-content padding="true" class="has-header has-message-input">
         <ion-list id="group-list3">
-            <ion-item id="group-list-item7" class="chat-message">Group Message 1</ion-item>
-            <ion-item id="group-list-item8" class="chat-message by-me">Group Message 2</ion-item>
-            <ion-item id="group-list-item9" class="chat-message">Group Message 3</ion-item>
+            <ion-item ng-repeat="m in messages" class="chat-message" ng-class="{'by-me': m.byMe}">
+                {{m.body}}
+                <h6>{{m._created_at | date: 'yyyy-MM-dd HH:mm:ss'}}</h6>
+                <h6>from {{m.user.name}}</h6>
+            </ion-item>
         </ion-list>
-        <form id="group-form3" class="list">
-            <div class="spacer" style="width: 300px; height: 22px;"></div>
-            <label class="item item-input" id="group-input7">
-                <span class="input-label">Input</span>
-                <input type="text" placeholder="">
-            </label>
-            <button id="group-button4" class="button button-positive  button-block">Send</button>
-        </form>
     </ion-content>
+    <form id="group-form3" class="message-input">
+        <label class="item item-input" id="group-input7">
+            <input type="text" placeholder="Message" ng-model="message">
+        </label>
+        <button id="group-button4" class="button button-positive  button-block" ng-click="sendMessage(message)">Send</button>
+    </form>
 </ion-view>

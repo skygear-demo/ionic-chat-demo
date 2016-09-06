@@ -73,15 +73,17 @@ angular.module('app.routes', ['ionicUIRouter'])
       /app/tab3/group/1
   */
   .state('tabsController.group', {
-    url: '/group/1',
+    url: '/group/:id',
     views: {
       'tab1': {
         templateUrl: 'templates/group.html',
-        controller: 'groupCtrl'
-      },
-      'tab3': {
-        templateUrl: 'templates/group.html',
-        controller: 'groupCtrl'
+        controller: 'groupCtrl',
+        resolve: {
+          conversation: function ($stateParams, Conversations) {
+            var conversationId = $stateParams.id;
+            return Conversations.get(conversationId);
+          },
+        }
       }
     }
   })
