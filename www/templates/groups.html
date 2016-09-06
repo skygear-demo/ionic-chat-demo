@@ -1,13 +1,10 @@
 <ion-view title="Groups" id="page2">
+    <ion-nav-buttons side="right">
+        <button class="button icon ion-plus" ng-click="createGroup()"></button>
+    </ion-nav-buttons>
     <ion-content padding="false" class="has-header">
         <ion-list id="groups-list1">
-            <ion-item class="item-icon-right" id="groups-list-item1" ui-sref="tabsController.group">Group 1
-                <i class="icon ion-chevron-right icon-accessory"></i>
-            </ion-item>
-            <ion-item class="item-icon-right" id="groups-list-item2" ui-sref="tabsController.group">Group 2
-                <i class="icon ion-chevron-right icon-accessory"></i>
-            </ion-item>
-            <ion-item class="item-icon-right" id="groups-list-item3" ui-sref="tabsController.group">Group 3
+            <ion-item class="item-icon-right" ui-sref="tabsController.group({id: g._id})" ng-repeat="g in groups">{{g.title}}
                 <i class="icon ion-chevron-right icon-accessory"></i>
             </ion-item>
         </ion-list>

@@ -1,9 +1,13 @@
-<ion-view title="Group" id="page5">
+<ion-view title="{{conversation.title}}" id="page5">
+    <ion-nav-buttons side="right">
+        <button class="button icon ion-plus" ng-click="showInviteUserModal()"></button>
+    </ion-nav-buttons>
     <ion-content padding="true" class="has-header">
         <ion-list id="group-list3">
-            <ion-item id="group-list-item7">Message 1</ion-item>
-            <ion-item id="group-list-item8">Message 2</ion-item>
-            <ion-item id="group-list-item9">Message 3</ion-item>
+            <ion-item id="group-list-item7" ng-repeat="m in messages" class="chat-message" ng-class="{'by-me': isMessageSentByMe(m)}">
+                {{m.body}}
+                <h6>from {{m.user.name}}</h6>
+            </ion-item>
         </ion-list>
     </ion-content>
 </ion-view>
