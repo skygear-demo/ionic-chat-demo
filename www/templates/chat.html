@@ -1,17 +1,17 @@
-<ion-view title="Chat" id="page6">
-    <ion-content padding="true" class="has-header">
+<ion-view title="{{user.name}}" id="page6">
+    <ion-content padding="true" class="has-header has-message-input">
         <ion-list id="chat-list4">
-            <ion-item id="chat-list-item10" class="chat-message">Chat Message 1</ion-item>
-            <ion-item id="chat-list-item11" class="chat-message by-me">Chat Message 2</ion-item>
-            <ion-item id="chat-list-item12" class="chat-message">Chat Message 3</ion-item>
+            <ion-item class="chat-message" ng-repeat="m in messages" ng-class="{'by-me': m.byMe}">
+                {{m.body}}
+                <h6>{{m._created_at | date:'yyyy-MM-dd HH:mm:ss'}}</h6>
+            </ion-item>
         </ion-list>
         <div class="spacer" style="width: 300px; height: 30px;"></div>
-        <form id="chat-form4" class="list">
-            <label class="item item-input" id="chat-input8">
-                <span class="input-label">Message</span>
-                <input type="text" placeholder="">
-            </label>
-            <button id="chat-button5" class="button button-positive  button-block">Send</button>
-        </form>
     </ion-content>
+    <form id="chat-form4" class="message-input">
+        <label class="item item-input" id="chat-input8">
+            <input type="text" placeholder="Message" ng-model="message">
+        </label>
+        <button id="chat-button5" class="button button-positive  button-block" ng-click="sendMessage(message)">Send</button>
+    </form>
 </ion-view>

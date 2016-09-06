@@ -63,18 +63,116 @@ function ($scope, $stateParams, Skygear, SkygearChat, $q, $ionicPopup, $state, C
   // Get conversations when groups page loads or receiving chat events
   getConversations();
   SkygearChat.subscribe(function (data) {
-    if (data.record_type === 'conversation') {
+    if (data.record_type === 'conversation' && !data.record.is_direct_message) {
       getConversations();
     }
   });
 }])
    
-.controller('chatsCtrl', ['$scope', '$stateParams', // The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
+.controller('chatsCtrl', ['$scope', '$stateParams', 'SkygearChat', 'Skygear', '$ionicModal', '$state', '$q', 'Conversations', 'Users',
+// The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
 // You can include any angular dependencies as parameters for this function
 // TIP: Access Route Parameters for your page via $stateParams.parameterName
-function ($scope, $stateParams) {
+function ($scope, $stateParams, SkygearChat, Skygear, $ionicModal, $state, $q, Conversations, Users) {
+  $scope.conversations = [];
 
+  $ionicModal.fromTemplateUrl('../templates/userSelector.html', {
+    scope: $scope,
+    animation: 'slide-in-up',
+  }).then(function (modal) {
+    $scope.modal = modal;
+  });
 
+  $scope.createDirectConversation = function () {
+    $scope.modal.show();
+  }
+  
+  $scope.selectUser = function (user) {
+    SkygearChat.getOrCreateDirectConversation(user._id)
+    .then(function (conversation) {
+      console.log('Create direct conversation success', data);
+      Conversations.cache(conversation);
+    }, function (error) {
+      console.log('Create direct conversation error', error);
+    });
+    $scope.modal.hide();
+  };
+
+  var getConversations = function () {
+    SkygearChat.getConversations()
+    .then(function (conversations) {
+      console.log('Get Conversations success', conversations);
+
+      conversations.forEach(function (conversation) {
+        Conversations.cache(conversation);
+      });
+
+      var directConversations = conversations.filter(function (conversation) {
+        return conversation.is_direct_message;
+      });
+
+      var userIds = directConversations.map(function (conversation) {
+        return conversation.participant_ids.filter(function (p) {
+          return p !== Skygear.currentUser.id;
+        })[0];
+      });
+
+      var userNotExists = userIds.filter(function (userId) {
+        return !Users.exists(userId);
+      });
+
+      var User = Skygear.Record.extend('user');
+      var q = new Skygear.Query(User).contains('_id', userNotExists);
+      Skygear.publicDB.query(q).then(function (users) {
+        users.forEach(function (user) {
+          Users.cache(user);
+        });
+
+        $scope.conversations = directConversations.map(function (conversation) {
+          var otherUserId = conversation.participant_ids.filter(function (p) {
+            return p !== Skygear.currentUser.id;
+          })[0];
+          conversation.user = Users.get(otherUserId);
+          return conversation;
+        });
+        $scope.$apply();
+      });
+    }, function (error) {
+      console.log('Get conversations error', error);
+      $scope.chats = [];
+      $scope.$apply();
+    });
+  };
+
+  getConversations();
+  SkygearChat.subscribe(function (data) {
+    if (data.record_type === 'conversation' && data.record.is_direct_message
+      && (data.record.participant_ids.indexOf(Skygear.currentUser.id) !== -1)) {
+      getConversations();
+    }
+  });
+
+  $scope.$on('modal.shown', function () {
+    var userIdExists = $scope.conversations.map(function (conversation) {
+      return conversation.participant_ids.filter(function (p) {
+        return p !== Skygear.currentUser.id;
+      })[0];
+    });
+    var User = Skygear.Record.extend('user');
+    var q = new Skygear.Query(User)
+      .notContains('_id', userIdExists.concat([Skygear.currentUser.id]));
+    Skygear.publicDB.query(q)
+    .then(function (users) {
+      console.log('Get user success', users);
+      users.forEach(function (user) {
+        Users.cache(user);
+      });
+      $scope.users = users;
+      $scope.$apply();
+    }, function (error) {
+      console.log('Get user error', error);
+    });
+  });
 }])
    
 .controller('settingsCtrl', ['$scope', '$stateParams', 'Skygear', '$state',
@@ -186,12 +284,47 @@ function ($scope, $stateParams, SkygearChat, Skygear, $ionicModal, $ionicScrollD
   });
 }])
    
-.controller('chatCtrl', ['$scope', '$stateParams', // The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
+.controller('chatCtrl', ['$scope', '$stateParams', 'Skygear', 'SkygearChat', '$ionicScrollDelegate', 'user', 'conversation',
+// The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
 // You can include any angular dependencies as parameters for this function
 // TIP: Access Route Parameters for your page via $stateParams.parameterName
-function ($scope, $stateParams) {
+function ($scope, $stateParams, Skygear, SkygearChat, $ionicScrollDelegate, user, conversation) {
+  $scope.user = user;
+  $scope.messages = [];
 
+  var getMessages = function () {
+    return SkygearChat.getMessages(conversation._id)
+    .then(function (messages) {
+      $scope.messages = messages.results.reverse()
+      .map(function (message) {
+        if (message._created_by === Skygear.currentUser.id) {
+          message.byMe = true;
+        }
+        return message;
+      });
+      $scope.$apply();
+      return messages;
+    });
+  }
 
+  $scope.sendMessage = function (message) {
+    SkygearChat.createMessage(conversation._id, message)
+    .then(function (message) {
+      $scope.message = "";
+      getMessages().then(function () {
+        $ionicScrollDelegate.scrollBottom();
+      });
+    });
+  };
+
+  getMessages();
+  SkygearChat.subscribe(function (data) {
+    if (data.record_type === 'message' &&
+        data._created_by !== Skygear.currentUser.id &&
+        data.record.conversation_id.$id.indexOf(conversation._id) > -1) {
+      getMessages();
+    }
+  });
 }])
    
 .controller('loginCtrl', ['$scope', '$stateParams', 'Skygear', '$state',

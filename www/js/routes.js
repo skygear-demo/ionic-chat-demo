@@ -89,11 +89,23 @@ angular.module('app.routes', ['ionicUIRouter'])
   })
 
   .state('tabsController.chat', {
-    url: '/chat/1',
+    url: '/chat/:id',
     views: {
       'tab2': {
         templateUrl: 'templates/chat.html',
-        controller: 'chatCtrl'
+        controller: 'chatCtrl',
+        resolve: {
+          user: function ($stateParams, conversation, Users, Skygear) {
+            var otherUserId = conversation.participant_ids.filter(function (p) {
+              return p !== Skygear.currentUser.id;
+            })[0];
+            return Users.get(otherUserId);
+          },
+          conversation: function ($stateParams, Conversations, SkygearChat) {
+            var conversationId = $stateParams.id;
+            return Conversations.get(conversationId);
+          }
+        }
       }
     }
   })

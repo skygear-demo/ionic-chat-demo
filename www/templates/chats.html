@@ -1,13 +1,10 @@
 <ion-view title="Chats" id="page3">
+    <ion-nav-buttons side="right">
+        <button class="button icon ion-plus" ng-click="createDirectConversation()"></button>
+    </ion-nav-buttons>
     <ion-content padding="false" class="has-header">
         <ion-list id="chats-list2">
-            <ion-item class="item-icon-right" id="chats-list-item4" ui-sref="tabsController.chat">User 1
-                <i class="icon ion-chevron-right icon-accessory"></i>
-            </ion-item>
-            <ion-item class="item-icon-right" id="chats-list-item5" ui-sref="tabsController.chat">User 2
-                <i class="icon ion-chevron-right icon-accessory"></i>
-            </ion-item>
-            <ion-item class="item-icon-right" id="chats-list-item6" ui-sref="tabsController.chat">User 3
+            <ion-item class="item-icon-right" ng-repeat="chat in conversations" ui-sref="tabsController.chat({'id': chat._id})">{{chat.user.name}}
                 <i class="icon ion-chevron-right icon-accessory"></i>
             </ion-item>
         </ion-list>
