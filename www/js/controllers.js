@@ -36,21 +36,22 @@ function ($scope, $stateParams, Skygear, SkygearChat, $q, $ionicPopup, $state, C
         [Skygear.currentUser.id], [Skygear.currentUser.id], res);
     }).then(function (conversation) {
       Conversations.cache(conversation);
-      console.log('Create group conversation success', conversation);
-      $scope.groups = $scope.groups.concat([conversation]);
-      $state.go('tabsController.group', {id: conversation._id});
+      SkygearChat.getConversation(conversation._id).then(function (userConversation) {
+        $scope.groups = $scope.groups.concat([userConversation]);
+        $state.go('tabsController.group', {id: conversation._id});
+      });
     });
   };
 
   var getConversations = function () {
     SkygearChat.getConversations()
-    .then(function (conversations) {
-      console.log('Get Conversations success', conversations);
-      conversations.forEach(function (conversation) {
-        Conversations.cache(conversation);
+    .then(function (userConversations) {
+      console.log('Get Conversations success', userConversations);
+      userConversations.forEach(function (userConversation) {
+        Conversations.cache(userConversation.$transient.conversation);
       });
-      $scope.groups = conversations.filter(function (conversation) {
-        return !conversation.is_direct_message;
+      $scope.groups = userConversations.filter(function (userConversation) {
+        return !userConversation.$transient.conversation.is_direct_message;
       });
       $scope.$apply();
     }, function (error) {
@@ -104,19 +105,19 @@ function ($scope, $stateParams, SkygearChat, Skygear, $ionicModal, $state, $q, C
 
   var getConversations = function () {
     SkygearChat.getConversations()
-    .then(function (conversations) {
-      console.log('Get Conversations success', conversations);
+    .then(function (userConversations) {
+      console.log('Get Conversations success', userConversations);
 
-      conversations.forEach(function (conversation) {
-        Conversations.cache(conversation);
+      userConversations.forEach(function (userConversation) {
+        Conversations.cache(userConversation.$transient.conversation);
       });
 
-      var directConversations = conversations.filter(function (conversation) {
-        return conversation.is_direct_message;
+      var directConversations = userConversations.filter(function (userConversation) {
+        return userConversation.$transient.conversation.is_direct_message;
       });
 
-      var userIds = directConversations.map(function (conversation) {
-        return conversation.participant_ids.filter(function (p) {
+      var userIds = directConversations.map(function (userConversation) {
+        return userConversation.$transient.conversation.participant_ids.filter(function (p) {
           return p !== Skygear.currentUser.id;
         })[0];
       });
@@ -132,14 +133,14 @@ function ($scope, $stateParams, SkygearChat, Skygear, $ionicModal, $state, $q, C
           Users.cache(user);
         });
 
-        $scope.conversations = directConversations.map(function (conversation) {
-          var otherUserId = conversation.participant_ids.filter(function (p) {
+        $scope.conversations = directConversations.map(function (userConversation) {
+          var otherUserId = userConversation.$transient.conversation.participant_ids.filter(function (p) {
             return p !== Skygear.currentUser.id;
           })[0];
           Users.get(otherUserId).then(function (user) {
-            conversation.user = user;
+            userConversation.user = user;
           });
-          return conversation;
+          return userConversation;
         });
         $scope.$apply();
       });
@@ -198,7 +199,7 @@ function ($scope, $stateParams, Skygear, $state) {
 // You can include any angular dependencies as parameters for this function
 // TIP: Access Route Parameters for your page via $stateParams.parameterName
 function ($scope, $stateParams, SkygearChat, Skygear, $ionicModal, $ionicScrollDelegate, conversation, Users, $q) {
-  var conversationId = $stateParams.id;
+  var conversationId = conversation._id;
   $scope.conversation = conversation;
 
   $scope.messages = [];
@@ -264,8 +265,9 @@ function ($scope, $stateParams, SkygearChat, Skygear, $ionicModal, $ionicScrollD
   });
 
   SkygearChat.subscribe(function (data) {
-    console.log(data);
-    if (data.event_type === 'create' && data.record.conversation_id.$id.indexOf(conversationId) !== -1) {
+    if (data.record_type === 'message' &&
+        data.event_type === 'create' &&
+        data.record.conversation_id.$id.indexOf(conversationId) !== -1) {
       getMessages().then(function () {
         if (data.record._created_by === Skygear.currentUser.id) {
           $ionicScrollDelegate.scrollBottom();

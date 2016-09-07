@@ -101,7 +101,7 @@ angular.module('app.routes', ['ionicUIRouter'])
             })[0];
             return Users.get(otherUserId);
           },
-          conversation: function ($stateParams, Conversations, SkygearChat) {
+          conversation: function ($stateParams, Conversations) {
             var conversationId = $stateParams.id;
             return Conversations.get(conversationId);
           }

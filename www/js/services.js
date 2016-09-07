@@ -27,7 +27,6 @@ angular.module('app.services', [])
   var users = {};
   var User = Skygear.Record.extend('user');
 
-
   return {
     cache: function (user) {
       users[user._id] = user;

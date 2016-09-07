@@ -4,7 +4,7 @@
     </ion-nav-buttons>
     <ion-content padding="false" class="has-header">
         <ion-list id="chats-list2">
-            <ion-item class="item-icon-right" ng-repeat="chat in conversations" ui-sref="tabsController.chat({'id': chat._id})">{{chat.user.name}}
+            <ion-item class="item-icon-right" ng-repeat="chat in conversations" ui-sref="tabsController.chat({'id': chat.$transient.conversation._id})">{{chat.user.name}}
                 <i class="icon ion-chevron-right icon-accessory"></i>
             </ion-item>
         </ion-list>
