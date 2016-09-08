@@ -81,7 +81,7 @@ angular.module('app.routes', ['ionicUIRouter'])
         resolve: {
           conversation: function ($stateParams, Conversations) {
             var conversationId = $stateParams.id;
-            return Conversations.get(conversationId);
+            return Conversations.fetchConversation(conversationId);
           },
         }
       }
@@ -99,11 +99,11 @@ angular.module('app.routes', ['ionicUIRouter'])
             var otherUserId = conversation.participant_ids.filter(function (p) {
               return p !== Skygear.currentUser.id;
             })[0];
-            return Users.get(otherUserId);
+            return Users.fetchUser(otherUserId);
           },
           conversation: function ($stateParams, Conversations) {
             var conversationId = $stateParams.id;
-            return Conversations.get(conversationId);
+            return Conversations.fetchConversation(conversationId);
           }
         }
       }
