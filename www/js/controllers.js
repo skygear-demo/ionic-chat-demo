@@ -127,7 +127,8 @@ function ($scope, $stateParams, SkygearChat, Skygear, $ionicModal, $ionicScrollD
   };
 
   $scope.sendMessage = function (message) {
-    var action = Messages.createMessage($scope.conversationId, message)
+    var action = Messages.createMessage($scope.conversationId, message);
+    $scope.message = "";
     $ionicScrollDelegate.scrollBottom();
   };
 

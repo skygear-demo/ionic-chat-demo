@@ -1,7 +1,7 @@
 angular.module('app.services', [])
 
-.factory('Conversations', ['SkygearChat', 'Skygear', 'Users', '$q', 
-function (SkygearChat, Skygear, Users, $q) {
+.factory('Conversations', ['SkygearChat', 'Skygear', 'Users', '$q', '$rootScope',
+function (SkygearChat, Skygear, Users, $q, $rootScope) {
   var conversations = {
     directConversations: [],
     groupConversations: [],
@@ -101,6 +101,34 @@ function (SkygearChat, Skygear, Users, $q) {
         return userConversation;
       });
     },
+
+    onConversationUpdated: function (conversation) {
+      SkygearChat.getConversation(conversation._id)
+      .then(function (userConversation) {
+        console.log('On conversation updated get conversation success', userConversation);
+        conversation = userConversation.$transient.conversation;
+        cache(conversation);
+        if (conversation.is_direct_message) {
+          conversations.directConversations.push(userConversation);
+        } else {
+          conversations.groupConversations.push(userConversation);
+        }
+        $rootScope.$apply();
+      }, function (error) {
+        if (conversation.is_direct_message) {
+          conversations.directConversations = conversations.directConversations
+          .filter(function (userConversation) {
+            return userConversation.$transient.conversation._id !== conversation._id;
+          });
+        } else {
+          conversations.groupConversations = conversations.groupConversations
+          .filter(function (userConversation) {
+            return userConversation.$transient.conversation._id !== conversation._id;
+          });
+        }
+        $rootScope.$apply();
+      });
+    }
   };
 }])
 
@@ -131,26 +159,27 @@ function (SkygearChat, Skygear, $q, $rootScope) {
     createMessage: function (conversationId, body) {
       var _message = {
         body: body,
-        _created_at: new Date(),
-        _created_by: Skygear.currentUser.id,
-        _in_progress: true,
+        createdAt: new Date(),
+        createdBy: Skygear.currentUser.id,
+        inProgress: true,
       };
       conversations[conversationId].push(_message);
       return SkygearChat.createMessage(conversationId, body)
       .then(function (message) {
         console.log('Create message success', message);
-        message._created_at = message.createdAt;
-        message._created_by = message.createdBy;
         var index = conversations[conversationId].indexOf(_message);
-        console.log(index);
         conversations[conversationId][index] = message;
         $rootScope.$apply();
         return message;
       });
     },
 
-    onMessagesCreated: function (message) {
-
+    onMessageCreated: function (message) {
+      if (message.createdBy !== Skygear.currentUser.id) {
+        var conversationId = message.conversation_id._id.split('/')[1];
+        conversations[conversationId].push(message);
+        $rootScope.$apply();
+      }
     },
   };
 }])
@@ -214,10 +243,14 @@ function (Skygear, $q) {
 .factory('SkygearChatEvent', ['SkygearChat', 'Conversations', 'Messages',
 function (SkygearChat, Conversations, Messages) {
   var handler = function (data) {
-    console.log(data);
+    console.log('Skygear chat event received', data);
     if (data.record_type === 'message') {
       if (data.event_type === 'create') {
         Messages.onMessageCreated(data.record);
+      }
+    } else if (data.record_type === 'conversation') {
+      if (data.event_type === 'update') {
+        Conversations.onConversationUpdated(data.record);
       }
     }
   };

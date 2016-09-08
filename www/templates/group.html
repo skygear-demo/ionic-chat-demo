@@ -4,10 +4,10 @@
     </ion-nav-buttons>
     <ion-content padding="true" class="has-header has-message-input">
         <ion-list id="group-list3">
-            <ion-item ng-repeat="m in conversations[conversation._id]" class="chat-message" ng-class="{'by-me': currentUser.id === m._created_by, 'in-progress': m._in_progress}">
+            <ion-item ng-repeat="m in conversations[conversation._id]" class="chat-message" ng-class="{'by-me': currentUser.id === m.createdBy, 'in-progress': m.inProgress}">
                 {{m.body}}
-                <h6>{{m._created_at | date: 'yyyy-MM-dd HH:mm:ss'}}</h6>
-                <h6>from {{users[m._created_by].name}}</h6>
+                <h6>{{m.createdAt | date: 'yyyy-MM-dd HH:mm:ss'}}</h6>
+                <h6>from {{users[m.createdBy].name}}</h6>
             </ion-item>
         </ion-list>
     </ion-content>
