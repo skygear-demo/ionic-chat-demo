@@ -70,24 +70,31 @@ function ($scope, $stateParams, SkygearChat, Skygear, $ionicModal, $state, $q, C
   };
   
   $scope.selectUser = function (user) {
-    Conversations.createDirectConversation(user)
+    Conversations.createDirectConversation(user._id)
     .then(function (userConversation) {
       $scope.modal.hide();
-    })
+      $state.go('tabsController.chat', {
+        id: userConversation.$transient.conversation._id
+      });
+    });
   };
 
   $scope.$on('modal.shown', function () {
     var userIdExists = $scope.conversations.directConversations
-    .map(function (userConversations) {
-      return userConversations.$transient.conversation.participant_ids.filter(function (p) {
+    .map(function (userConversation) {
+      return userConversation.$transient.conversation.participant_ids.filter(function (p) {
         return p !== Skygear.currentUser.id;
       })[0];
-    });
+    }).concat(Skygear.currentUser.id);
     Users.fetchAllUsersExclude(userIdExists)
     .then(function (users) {
-      $scope.users = users;
+      $scope.inviteUsers = users;
       $scope.$apply();
     });
+  });
+
+  Conversations.fetchConversations().then(function () {
+    $scope.$apply();
   });
 
   SkygearChatEvent.subscribe();
@@ -115,7 +122,6 @@ function ($scope, $stateParams, SkygearChat, Skygear, $ionicModal, $ionicScrollD
   $scope.conversations = Messages.conversations;
   $scope.currentUser = Skygear.currentUser;
   $scope.users = Users.users;
-  $scope.inviteUsers = [];
 
   $scope.showInviteUserModal = function () {
     $scope.modal.show();
@@ -177,9 +183,11 @@ function ($scope, $stateParams, Skygear, SkygearChat, $ionicScrollDelegate, user
 
   $scope.sendMessage = function (message) {
     Messages.createMessage(conversation._id, message);
+    $scope.message = "";
+    $ionicScrollDelegate.scrollBottom();
   };
 
-  Messages.fetchMessages(conversationId)
+  Messages.fetchMessages($scope.conversationId)
   .then(function () {
     $ionicScrollDelegate.scrollBottom();
   });

@@ -11,6 +11,13 @@ function (SkygearChat, Skygear, Users, $q, $rootScope) {
     conversations[conversation._id] = conversation;
   };
 
+  var getOtherUserIdFromDirectConversation = function (conversation) {
+    return conversation.participant_ids
+    .filter(function (p) {
+      return p !== Skygear.currentUser.id;
+    });
+  }
+
   return {
     conversations: conversations,
 
@@ -23,10 +30,8 @@ function (SkygearChat, Skygear, Users, $q, $rootScope) {
           return c.$transient.conversation.is_direct_message;
         }).map(function (c) {
           var conversation = c.$transient.conversation;
-          conversation.otherUserId = conversation.participant_ids
-          .filter(function (p) {
-            return p !== Skygear.currentUser.id;
-          });
+          conversation.otherUserId = getOtherUserIdFromDirectConversation(
+            conversation);
           return c;
         });
 
@@ -94,10 +99,13 @@ function (SkygearChat, Skygear, Users, $q, $rootScope) {
     createDirectConversation: function (userId) {
       return SkygearChat.getOrCreateDirectConversation(userId)
       .then(function (conversation) {
-        cache(conversation);
         return SkygearChat.getConversation(conversation._id);
       }).then(function (userConversation) {
-        conversation.directConversations.push(userConversation);
+        conversation = userConversation.$transient.conversation;
+        conversation.otherUserId = getOtherUserIdFromDirectConversation(
+          conversation);
+        cache(conversation);
+        conversations.directConversations.push(userConversation);
         return userConversation;
       });
     },
@@ -107,8 +115,13 @@ function (SkygearChat, Skygear, Users, $q, $rootScope) {
       .then(function (userConversation) {
         console.log('On conversation updated get conversation success', userConversation);
         conversation = userConversation.$transient.conversation;
+        if (conversation.ownerID === Skygear.currentUser.id) {
+          return;
+        }
         cache(conversation);
         if (conversation.is_direct_message) {
+          conversation.otherUserId = getOtherUserIdFromDirectConversation(
+            conversation);
           conversations.directConversations.push(userConversation);
         } else {
           conversations.groupConversations.push(userConversation);
@@ -240,8 +253,8 @@ function (Skygear, $q) {
   };
 }])
 
-.factory('SkygearChatEvent', ['SkygearChat', 'Conversations', 'Messages',
-function (SkygearChat, Conversations, Messages) {
+.factory('SkygearChatEvent', ['SkygearChat', 'Conversations', 'Messages', 'Users', '$rootScope',
+function (SkygearChat, Conversations, Messages, Users, $rootScope) {
   var handler = function (data) {
     console.log('Skygear chat event received', data);
     if (data.record_type === 'message') {
@@ -251,6 +264,9 @@ function (SkygearChat, Conversations, Messages) {
     } else if (data.record_type === 'conversation') {
       if (data.event_type === 'update') {
         Conversations.onConversationUpdated(data.record);
+        Users.fetchUsers(data.record.participant_ids).then(function () {
+          $rootScope.$apply();
+        });
       }
     }
   };
