@@ -39,9 +39,12 @@ function ($scope, $stateParams, Skygear, SkygearChat, $q, $ionicPopup, $state, C
     });
   };
 
-  Conversations.fetchConversations().then(function () {
-    $scope.$apply();
-  });
+  $scope.goToGroup = function (conversationId) {
+    $state.go('tabsController.group', {id: conversationId});
+    Conversations.setUnreadCount(conversationId, 0);
+  };
+
+  Conversations.fetchConversations();
 
   SkygearChatEvent.subscribe();
 }])
@@ -63,10 +66,17 @@ function ($scope, $stateParams, SkygearChat, Skygear, $ionicModal, $state, $q, C
 
   $scope.createDirectConversation = function () {
     $scope.modal.show();
-  }
+  };
 
   $scope.closeModal = function () {
     $scope.modal.hide();
+  };
+
+  $scope.goToChat = function (conversationId) {
+    $state.go('tabsController.chat', {
+      id: conversationId
+    });
+    Conversations.setUnreadCount(conversationId, 0);
   };
   
   $scope.selectUser = function (user) {
@@ -93,9 +103,7 @@ function ($scope, $stateParams, SkygearChat, Skygear, $ionicModal, $state, $q, C
     });
   });
 
-  Conversations.fetchConversations().then(function () {
-    $scope.$apply();
-  });
+  Conversations.fetchConversations();
 
   SkygearChatEvent.subscribe();
 }])

@@ -1,7 +1,7 @@
 angular.module('app.services', [])
 
-.factory('Conversations', ['SkygearChat', 'Skygear', 'Users', '$q', '$rootScope',
-function (SkygearChat, Skygear, Users, $q, $rootScope) {
+.factory('Conversations', ['SkygearChat', 'Skygear', 'Users', '$q', '$rootScope', '$state',
+function (SkygearChat, Skygear, Users, $q, $rootScope, $state) {
   var conversations = {
     directConversations: [],
     groupConversations: [],
@@ -18,13 +18,25 @@ function (SkygearChat, Skygear, Users, $q, $rootScope) {
     });
   }
 
+  var setUnreadCount = function (conversationId, count) {
+    conversations.groupConversations.forEach(function (userConversation) {
+      if (userConversation.conversation._id === conversationId) {
+        userConversation.unread_count = count;
+      }
+    });
+    conversations.directConversations.forEach(function (userConversation) {
+      if (userConversation.conversation._id === conversationId) {
+        userConversation.unread_count = count;
+      }
+    });
+  };
+
   return {
     conversations: conversations,
 
     fetchConversations: function () {
       return SkygearChat.getConversations()
       .then(function (userConversations) {
-        console.log(userConversations);
         conversations.directConversations = userConversations
         .filter(function (c) {
           return c.$transient.conversation.is_direct_message;
@@ -39,6 +51,8 @@ function (SkygearChat, Skygear, Users, $q, $rootScope) {
         .filter(function (c) {
           return !c.$transient.conversation.is_direct_message;
         });
+
+        $rootScope.$apply();
 
         userConversations.forEach(function (c) {
           cache(c.$transient.conversation);
@@ -110,6 +124,11 @@ function (SkygearChat, Skygear, Users, $q, $rootScope) {
       });
     },
 
+    setUnreadCount: function (conversationId, count) {
+      conversationId = 'conversation/' + conversationId;
+      setUnreadCount(conversationId, count);
+    },
+
     onConversationUpdated: function (conversation) {
       SkygearChat.getConversation(conversation._id)
       .then(function (userConversation) {
@@ -141,7 +160,20 @@ function (SkygearChat, Skygear, Users, $q, $rootScope) {
         }
         $rootScope.$apply();
       });
-    }
+    },
+
+    onMessageCreated: function (message) {
+      var conversationId = message.conversation_id._id;
+      SkygearChat.getUnreadMessageCount(conversationId.split('/')[1])
+      .then(function (unreadMessageCount) {
+        if (conversationId.indexOf($state.params.id) === -1) {
+          setUnreadCount(conversationId, unreadMessageCount);
+          $rootScope.$apply();
+        } else {
+          SkygearChat.markAsLastMessageRead(conversationId.split('/')[1], message._id);
+        }
+      });
+    },
   };
 }])
 
@@ -161,7 +193,14 @@ function (SkygearChat, Skygear, $q, $rootScope) {
       SkygearChat.getMessages(conversationId)
       .then(function (messages) {
         console.log('Plugin get messages success', messages);
+        
         conversations[conversationId] = messages.results.reverse();
+        var lastMessageIndex = conversations[conversationId].length - 1;
+
+        SkygearChat.markAsLastMessageRead(
+          conversationId, conversations[conversationId][lastMessageIndex]._id
+        );
+
         if (!conversationMessages) {
           deferred.resolve(conversations[conversationId]);
         }
@@ -188,8 +227,8 @@ function (SkygearChat, Skygear, $q, $rootScope) {
     },
 
     onMessageCreated: function (message) {
-      if (message.createdBy !== Skygear.currentUser.id) {
-        var conversationId = message.conversation_id._id.split('/')[1];
+      var conversationId = message.conversation_id._id.split('/')[1];
+      if (message.createdBy !== Skygear.currentUser.id && conversations[conversationId]) {
         conversations[conversationId].push(message);
         $rootScope.$apply();
       }
@@ -259,6 +298,7 @@ function (SkygearChat, Conversations, Messages, Users, $rootScope) {
     console.log('Skygear chat event received', data);
     if (data.record_type === 'message') {
       if (data.event_type === 'create') {
+        Conversations.onMessageCreated(data.record);
         Messages.onMessageCreated(data.record);
       }
     } else if (data.record_type === 'conversation') {
