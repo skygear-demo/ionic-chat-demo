@@ -1,4 +1,4 @@
-<ion-view title="Chats" id="page3">
+<ion-view title="Chats">
     <ion-nav-buttons side="right">
         <button class="button icon ion-plus" ng-click="createDirectConversation()"></button>
     </ion-nav-buttons>
@@ -7,7 +7,8 @@
             <ion-item class="item-icon-right"
                 ng-repeat="c in conversations.directConversations"
                 ng-click="goToChat(c.$transient.conversation._id)">
-                {{users[c.$transient.conversation.otherUserId].name}} ({{c.unread_count}})
+                {{users[c.$transient.conversation.otherUserId].name}}
+                <span class="item-note" ng-if="c.unread_count">{{c.unread_count}} unread</span>
                 <i class="icon ion-chevron-right icon-accessory"></i>
             </ion-item>
         </ion-list>

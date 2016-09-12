@@ -1,25 +1,42 @@
 angular.module('app.services.conversations', [])
 
+/**
+ * Conversations factory performs actions of conversations
+ * such as getting conversations, create conversations, make
+ * a user to be a member of a conversation and update unread count.
+ *
+ * This factory also hode a cache of conversations and separated
+ * user conversation list of direct or group conversations for
+ * fast fetching by the view.
+ */
 .factory('Conversations', [
   'SkygearChat', 'Skygear', 'Users', '$q', '$rootScope', '$state',
   function(SkygearChat, Skygear, Users, $q, $rootScope, $state) {
-    var conversations = {
+
+    // a cache holding conversations and catagorized direct/group
+    // conversaion list.
+    const conversations = {
       directConversations: [],
       groupConversations: []
     };
 
-    var cache = function(conversation) {
+    const cache = function(conversation) {
       conversations[conversation._id] = conversation;
     };
 
-    var getOtherUserIdFromDirectConversation = function(conversation) {
+    // helper function for getting the other user id from a direct
+    // conversation
+    const getOtherUserIdFromDirectConversation = function(conversation) {
       return conversation.participant_ids
       .filter(function(p) {
         return p !== Skygear.currentUser.id;
       });
     };
 
-    var setUnreadCount = function(conversationId, count) {
+    // helper function for setting unread count of a user conversation
+    // it function will find a user conversation from group and direct
+    // conversation list
+    const setUnreadCount = function(conversationId, count) {
       conversations.groupConversations.forEach(function(userConversation) {
         if (userConversation.conversation._id === conversationId) {
           userConversation.unread_count = count;
@@ -35,9 +52,15 @@ angular.module('app.services.conversations', [])
     return {
       conversations: conversations,
 
+      // Fetch conversations and categorize them into group and direct
+      // conversations. This function will cache conversations and
+      // push user conversations to specific list.
       fetchConversations: function() {
         return SkygearChat.getConversations()
         .then(function(userConversations) {
+
+          // Categorize conversations into group conversation and direct
+          // conversation
           conversations.directConversations = userConversations
           .filter(function(c) {
             return c.$transient.conversation.is_direct_message;
@@ -59,6 +82,7 @@ angular.module('app.services.conversations', [])
             cache(c.$transient.conversation);
           });
 
+          // Fetch users at the same time
           const users = userConversations.reduce(function(prev, curr) {
             return prev.concat(curr.$transient.conversation.participant_ids);
           }, []);
@@ -70,9 +94,10 @@ angular.module('app.services.conversations', [])
         });
       },
 
+      // Getting a single conversation
       fetchConversation: function(conversationId) {
-        var deferred = $q.defer();
-        var conversation = conversations[conversationId];
+        const deferred = $q.defer();
+        const conversation = conversations[conversationId];
         if (conversation) {
           deferred.resolve(conversation);
         } else {
@@ -90,6 +115,7 @@ angular.module('app.services.conversations', [])
         return deferred.promise;
       },
 
+      // Create group conversation and push this to group conversation list
       createGroupConversation: function(title) {
         return SkygearChat.createConversation(
           [Skygear.currentUser.id], [Skygear.currentUser.id], title
@@ -102,6 +128,7 @@ angular.module('app.services.conversations', [])
         });
       },
 
+      // Add user to a conversation
       addParticipant: function(conversationId, userId) {
         return SkygearChat.addParticipants(conversationId, [userId])
         .then(function(conversation) {
@@ -111,6 +138,8 @@ angular.module('app.services.conversations', [])
         });
       },
 
+      // Invite other user for direct conversation. It will add a new
+      // user conversation to direct conversation list.
       createDirectConversation: function(userId) {
         return SkygearChat.getOrCreateDirectConversation(userId)
         .then(function(conversation) {
@@ -125,11 +154,15 @@ angular.module('app.services.conversations', [])
         });
       },
 
+      // Update unread count of a conversation, usually called with 0 count
+      // when a user start reading a conversation.
       setUnreadCount: function(conversationId, count) {
         conversationId = 'conversation/' + conversationId;
         setUnreadCount(conversationId, count);
       },
 
+      // This function is called by skygear chat pubsub on conversation update
+      // event.
       onConversationUpdated: function(conversation) {
         SkygearChat.getConversation(conversation._id)
         .then(function(userConversation) {
@@ -162,8 +195,11 @@ angular.module('app.services.conversations', [])
         });
       },
 
+      // This function is called by skygear ch pubsub on message create event.
+      // This function will set unread count of a user conversation if current
+      // user is not reading that conversation.
       onMessageCreated: function(message) {
-        var conversationId = message.conversation_id._id;
+        const conversationId = message.conversation_id._id;
         SkygearChat.getUnreadMessageCount(conversationId.split('/')[1])
         .then(function(unreadMessageCount) {
           if (conversationId.indexOf($state.params.id) === -1) {

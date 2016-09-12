@@ -1,5 +1,7 @@
 angular.module('app.directives.scrollAnchor', [])
 
+// Scroll anchor directive retains the scroll position of a list
+// anchoring bottom of the container view.
 .directive('scrollAnchor', ['$ionicScrollDelegate', '$window',
   function($ionicScrollDelegate, $window) {
     return {

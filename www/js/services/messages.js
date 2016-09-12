@@ -1,5 +1,12 @@
 angular.module('app.services.messages', [])
 
+/**
+ * Messages factory performs actions of messages
+ * such as getting messages and create messages.
+ *
+ * This factory also hode a cache of messages in terms of
+ * conversations for fast fetching of messages given conversation id.
+ */
 .factory('Messages', ['SkygearChat', 'Skygear', '$q', '$rootScope',
   function(SkygearChat, Skygear, $q, $rootScope) {
     var conversations = {};
@@ -7,9 +14,10 @@ angular.module('app.services.messages', [])
     return {
       conversations: conversations,
 
+      // Getting messages of a conversation
       fetchMessages: function(conversationId) {
-        var deferred = $q.defer();
-        var conversationMessages = conversations[conversationId];
+        const deferred = $q.defer();
+        const conversationMessages = conversations[conversationId];
         if (conversationMessages) {
           deferred.resolve(conversationMessages);
         }
@@ -18,7 +26,7 @@ angular.module('app.services.messages', [])
           console.log('Plugin get messages success', messages);
 
           conversations[conversationId] = messages.results.reverse();
-          var lastMessageIndex = conversations[conversationId].length - 1;
+          const lastMessageIndex = conversations[conversationId].length - 1;
 
           SkygearChat.markAsLastMessageRead(
             conversationId, conversations[conversationId][lastMessageIndex]._id
@@ -31,8 +39,12 @@ angular.module('app.services.messages', [])
         return deferred.promise;
       },
 
+      // Create a new message in a conversation. For seamless usage of
+      // sending message, we will first create a fake message holding
+      // the message and let the message send until the response of message
+      // comes back. The response message will overwrite the fake message.
       createMessage: function(conversationId, body) {
-        var _message = {
+        const _message = {
           body: body,
           createdAt: new Date(),
           createdBy: Skygear.currentUser.id,
@@ -42,15 +54,18 @@ angular.module('app.services.messages', [])
         return SkygearChat.createMessage(conversationId, body)
         .then(function(message) {
           console.log('Create message success', message);
-          var index = conversations[conversationId].indexOf(_message);
+          const index = conversations[conversationId].indexOf(_message);
           conversations[conversationId][index] = message;
           $rootScope.$apply();
           return message;
         });
       },
 
+      // This function is used by chat pubsub on message created event.
+      // It pushes the incoming message to the message list according to
+      // the conversation it belongs to.
       onMessageCreated: function(message) {
-        var conversationId = message.conversation_id._id.split('/')[1];
+        const conversationId = message.conversation_id._id.split('/')[1];
         if (message.createdBy !== Skygear.currentUser.id &&
             conversations[conversationId]) {
           conversations[conversationId].push(message);

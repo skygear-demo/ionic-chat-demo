@@ -1,5 +1,9 @@
 angular.module('app.services.users', [])
 
+/**
+ * Users factory helps getting users and store them locally
+ * for faster fetch.
+ */
 .factory('Users', ['Skygear', '$q',
   function(Skygear, $q) {
     var users = {};
@@ -8,6 +12,7 @@ angular.module('app.services.users', [])
     return {
       users: users,
 
+      // Fetch user given user id
       fetchUser: function(userId) {
         var deferred = $q.defer();
         var user = users[userId];
@@ -26,6 +31,7 @@ angular.module('app.services.users', [])
         return deferred.promise;
       },
 
+      // Fetch users given a set of user ids
       fetchUsers: function(userIds) {
         var userNotFetched = userIds.filter(function(userId) {
           return !users[userId];
@@ -43,6 +49,7 @@ angular.module('app.services.users', [])
         });
       },
 
+      // Fetch users except some user ids
       fetchAllUsersExclude: function(userIds) {
         var query = new Skygear.Query(User).notContains('_id', userIds);
         return Skygear.publicDB.query(query)

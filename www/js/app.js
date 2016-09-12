@@ -3,7 +3,7 @@ angular.module('app', [
 ])
 
 .run(function($ionicPlatform, Skygear, $state, Conversations,
-              SkygearChatEvent) {
+              SkygearChatEvent, $timeout) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the
     // accessory bar above the keyboard
@@ -18,12 +18,15 @@ angular.module('app', [
       window.StatusBar.styleDefault();
     }
 
+    // currentUser exists in Skygear SDK when user successfully logged in
+    // using Skygear SDK. We check the existance of this attribute and
+    // go to groups page directly.
     if (Skygear.currentUser) {
-      Conversations.fetchConversations()
-      .then(function() {
+      Conversations.fetchConversations();
+      $timeout(function() {
         $state.go('tabsController.groups');
+        SkygearChatEvent.subscribe();
       });
-      SkygearChatEvent.subscribe();
     }
   });
 });

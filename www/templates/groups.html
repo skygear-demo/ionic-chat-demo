@@ -7,7 +7,8 @@
             <ion-item class="item-icon-right"
                 ng-click="goToGroup(g.$transient.conversation._id)"
                 ng-repeat="g in conversations.groupConversations">
-                {{g.$transient.conversation.title}} ({{g.unread_count}})
+                {{g.$transient.conversation.title}}
+                <span class="item-note" ng-if="g.unread_count">{{g.unread_count}} unread</span>
                 <i class="icon ion-chevron-right icon-accessory"></i>
             </ion-item>
         </ion-list>
