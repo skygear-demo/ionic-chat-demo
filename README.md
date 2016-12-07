@@ -31,7 +31,11 @@ skygear.config({
   ...
 ```
 
-### Run your app
+## Build your app
+
+### iOS
+
+#### Run your app
 
 Open xcode to fulfill code signing requirement for the first time.
 
@@ -45,10 +49,18 @@ After that we can build app using command line.
 $ npm run ionic emulate ios
 ```
 
-### Build to device
+#### Build to device
 
 Open xcode and select build device and start build.
 
 ```
 $ open platforms/ios/Ionic\ Chat\ Demo.xcodeproj
+```
+
+### Android
+
+#### Build to device
+
+```
+$ npm run ionic run android --device
 ```
