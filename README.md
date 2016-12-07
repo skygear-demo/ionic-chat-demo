@@ -1,37 +1,54 @@
 # Chat app using Ionic, backed by SkygearIO
 
+## Prerequisites
+
+- Node.js >= 4
+
 ## Get started
 
-### Install Ionic
+### Install Dependencies
 
 ```
-$ npm install -g cordova ionic
+$ npm install
 ```
 
-$$$ Start a project
+### Restore ionic app state
 
 ```
-$ ionic start ionic-chat-demo blank
-$ cd ionic-chat-demo
+$ npm run ionic state reset
 ```
 
-### Copy your exported ionic creator project files to your ionic project
+### Update skygear credentials
+
+Get your skygear api credentials from portal and replace
+string in the following code snippet in `www/js/app.js`.
 
 ```
-$ rm -r www
-$ cp <your exported ionic creator project> www
+skygear.config({
+  endPoint: '<API_ENDPOINT>',
+  apiKey: '<API_KEY>'
+}).then(function(client) {
+  ...
 ```
 
 ### Run your app
 
-```
-$ ionic emulate ios
-```
-
-### Run your app on your browser
-
-Note that some native features will not be available in browser.
+Open xcode to fulfill code signing requirement for the first time.
 
 ```
-$ ionic serve
+$ open platforms/ios/Ionic\ Chat\ Demo.xcodeproj
+```
+
+After that we can build app using command line.
+
+```
+$ npm run ionic emulate ios
+```
+
+### Build to device
+
+Open xcode and select build device and start build.
+
+```
+$ open platforms/ios/Ionic\ Chat\ Demo.xcodeproj
 ```
