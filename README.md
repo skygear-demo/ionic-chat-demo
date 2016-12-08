@@ -18,6 +18,8 @@ For the first time runner, install the dependencies and restore ionic project
 using following command.
 
 ```
+$ git submodule init
+$ git submodule update
 $ npm install
 $ npm run ionic state reset
 ```
