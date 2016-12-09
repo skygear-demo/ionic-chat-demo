@@ -15,7 +15,7 @@ angular.module('app.controllers.chatCtrl', [])
       $ionicScrollDelegate.scrollBottom();
     });
     $scope.conversations = Messages.conversations;
-    $scope.conversationId = conversation._id;
+    $scope.conversationId = conversation.id;
     $scope.currentUser = Skygear.currentUser;
     $scope.user = user;
 

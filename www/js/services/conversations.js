@@ -205,17 +205,19 @@ angular.module('app.services.conversations', [])
       // This function will set unread count of a user conversation if current
       // user is not reading that conversation.
       onMessageCreated: function(message) {
-        const conversationId = message.conversation_id._id;
-        SkygearChat.getUnreadMessageCount(conversationId.split('/')[1])
-        .then(function(unreadMessageCount) {
-          if (conversationId.indexOf($state.params.id) === -1) {
-            setUnreadCount(conversationId, unreadMessageCount);
-            $rootScope.$apply();
-          } else {
-            SkygearChat.markAsLastMessageRead(
-              conversationId.split('/')[1], message._id);
-          }
-        });
+        console.log('conversation', message);
+        const conversationId = message.conversation_id.id.split('/')[1];
+        const conversation = conversations[conversationId];
+        SkygearChat.getUnreadMessageCount(conversation)
+          .then(function(unreadMessageCount) {
+            if (conversationId.indexOf($state.params.id) === -1) {
+              setUnreadCount(conversationId, unreadMessageCount);
+              $rootScope.$apply();
+            } else {
+              SkygearChat.markAsLastMessageRead(
+                conversation, message);
+            }
+          });
       }
     };
   }

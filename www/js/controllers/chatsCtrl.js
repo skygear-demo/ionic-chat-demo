@@ -9,6 +9,7 @@ angular.module('app.controllers.chatsCtrl', [])
   'Conversations', 'Users', '$ionicLoading',
   function($scope, Skygear, $ionicModal, $state,
             Conversations, Users, $ionicLoading) {
+    console.log('chatsCtrl');
     // Fetch all conversation and establish a linkage to the view
     Conversations.fetchConversations();
     $scope.conversations = Conversations.conversations;
