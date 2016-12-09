@@ -56,24 +56,26 @@ angular.module('app.services.conversations', [])
       // conversations. This function will cache conversations and
       // push user conversations to specific list.
       fetchConversations: function() {
-        return SkygearChat.getConversations()
+        return SkygearChat.getUserConversations()
         .then(function(userConversations) {
 
           // Categorize conversations into group conversation and direct
           // conversation
           conversations.directConversations = userConversations
-          .filter(function(c) {
-            return c.$transient.conversation.is_direct_message;
+          .filter(function(uc) {
+            const conversation = uc.$transient.conversation
+            return conversation.distinct_by_participants && conversation.participant_count === 2;
           }).map(function(c) {
-            var conversation = c.$transient.conversation;
+            const conversation = c.$transient.conversation;
             conversation.otherUserId = getOtherUserIdFromDirectConversation(
               conversation);
             return c;
           });
 
           conversations.groupConversations = userConversations
-          .filter(function(c) {
-            return !c.$transient.conversation.is_direct_message;
+          .filter(function(uc) {
+            const conversation = uc.$transient.conversation
+            return !conversation.distinct_by_participants || conversation.participant_count !== 2;
           });
 
           $rootScope.$apply();
@@ -101,7 +103,7 @@ angular.module('app.services.conversations', [])
         if (conversation) {
           deferred.resolve(conversation);
         } else {
-          SkygearChat.getConversation(conversationId)
+          SkygearChat.getUserConversation(conversationId)
           .then(function(userConversation) {
             conversation = userConversation.$transient.conversation;
             cache(conversation);
@@ -118,13 +120,15 @@ angular.module('app.services.conversations', [])
       // Create group conversation and push this to group conversation list
       createGroupConversation: function(title) {
         return SkygearChat.createConversation(
-          [Skygear.currentUser.id], [Skygear.currentUser.id], title
+          [Skygear.currentUser], title
         ).then(function(conversation) {
           cache(conversation);
-          return SkygearChat.getConversation(conversation._id);
+          return SkygearChat.getUserConversation(conversation);
         }).then(function(userConversation) {
           conversations.groupConversations.push(userConversation);
           return userConversation;
+        }, function(err) {
+          console.log('create Conversationfails', err);
         });
       },
 
@@ -140,10 +144,10 @@ angular.module('app.services.conversations', [])
 
       // Invite other user for direct conversation. It will add a new
       // user conversation to direct conversation list.
-      createDirectConversation: function(userId) {
-        return SkygearChat.getOrCreateDirectConversation(userId)
+      createDirectConversation: function(user, title) {
+        return SkygearChat.createDirectConversation(user, title)
         .then(function(conversation) {
-          return SkygearChat.getConversation(conversation._id);
+          return SkygearChat.getUserConversation(conversation);
         }).then(function(userConversation) {
           const conversation = userConversation.$transient.conversation;
           conversation.otherUserId = getOtherUserIdFromDirectConversation(
@@ -151,6 +155,8 @@ angular.module('app.services.conversations', [])
           cache(conversation);
           conversations.directConversations.push(userConversation);
           return userConversation;
+        }, function(err) {
+          console.log('createDirectConversation fails', err);
         });
       },
 
@@ -164,7 +170,7 @@ angular.module('app.services.conversations', [])
       // This function is called by skygear chat pubsub on conversation update
       // event.
       onConversationUpdated: function(conversation) {
-        SkygearChat.getConversation(conversation._id)
+        SkygearChat.getUserConversation(conversation)
         .then(function(userConversation) {
           conversation = userConversation.$transient.conversation;
           if (conversation.ownerID === Skygear.currentUser.id) {

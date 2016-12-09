@@ -15,25 +15,28 @@ angular.module('app.services.messages', [])
       conversations: conversations,
 
       // Getting messages of a conversation
-      fetchMessages: function(conversationId) {
+      fetchMessages: function(conversation) {
         const deferred = $q.defer();
-        const conversationMessages = conversations[conversationId];
+        const conversationMessages = conversations[conversation._id];
         if (conversationMessages) {
           deferred.resolve(conversationMessages);
         }
-        SkygearChat.getMessages(conversationId)
+        SkygearChat.getMessages(conversation)
         .then(function(messages) {
           console.log('Plugin get messages success', messages);
 
-          conversations[conversationId] = messages.results.reverse();
-          const lastMessageIndex = conversations[conversationId].length - 1;
+          conversations[conversation._id] = messages.results.reverse();
+          const lastMessageIndex = conversations[conversation._id].length - 1;
 
-          SkygearChat.markAsLastMessageRead(
-            conversationId, conversations[conversationId][lastMessageIndex]._id
-          );
+          const lastMessage = conversations[conversation._id][lastMessageIndex];
+          if (lastMessage) {
+            SkygearChat.markAsLastMessageRead(
+              conversation, lastMessage
+            );
+          }
 
           if (!conversationMessages) {
-            deferred.resolve(conversations[conversationId]);
+            deferred.resolve(conversations[conversation._id]);
           }
         });
         return deferred.promise;
@@ -43,19 +46,19 @@ angular.module('app.services.messages', [])
       // sending message, we will first create a fake message holding
       // the message and let the message send until the response of message
       // comes back. The response message will overwrite the fake message.
-      createMessage: function(conversationId, body) {
+      createMessage: function(conversation, body) {
         const _message = {
           body: body,
           createdAt: new Date(),
           createdBy: Skygear.currentUser.id,
           inProgress: true
         };
-        conversations[conversationId].push(_message);
-        return SkygearChat.createMessage(conversationId, body)
+        conversations[conversation._id].push(_message);
+        return SkygearChat.createMessage(conversation, body)
         .then(function(message) {
           console.log('Create message success', message);
-          const index = conversations[conversationId].indexOf(_message);
-          conversations[conversationId][index] = message;
+          const index = conversations[conversation._id].indexOf(_message);
+          conversations[conversation._id][index] = message;
           $rootScope.$apply();
           return message;
         });

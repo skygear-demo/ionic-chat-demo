@@ -9,7 +9,7 @@ angular.module('app.controllers.groupCtrl', [])
   function($scope, SkygearChat, Skygear, $ionicModal, $ionicScrollDelegate,
            conversation, Messages, Users, Conversations, $ionicLoading) {
     // Bind message cached to the view
-    Messages.fetchMessages(conversation._id)
+    Messages.fetchMessages(conversation)
     .then(function() {
       $ionicScrollDelegate.scrollBottom();
     });
@@ -20,9 +20,9 @@ angular.module('app.controllers.groupCtrl', [])
     $scope.currentUser = Skygear.currentUser;
     $scope.users = Users.users;
 
-    $scope.sendMessage = function(message) {
-      if (message) {
-        Messages.createMessage($scope.conversationId, message);
+    $scope.sendMessage = function(messageText) {
+      if (messageText) {
+        Messages.createMessage($scope.conversation, messageText);
         $scope.message = "";
         $ionicScrollDelegate.scrollBottom();
       }
@@ -41,7 +41,7 @@ angular.module('app.controllers.groupCtrl', [])
     }).then(function(modal) {
       $scope.modal = modal;
     });
-    
+
     $scope.showInviteUserModal = function() {
       $scope.modal.show();
     };

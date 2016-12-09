@@ -10,7 +10,7 @@ angular.module('app.controllers.chatCtrl', [])
             Messages) {
     // Fetch all messages of this direct conversation and
     // bind it to our view
-    Messages.fetchMessages(conversation._id)
+    Messages.fetchMessages(conversation)
     .then(function() {
       $ionicScrollDelegate.scrollBottom();
     });
@@ -19,9 +19,9 @@ angular.module('app.controllers.chatCtrl', [])
     $scope.currentUser = Skygear.currentUser;
     $scope.user = user;
 
-    $scope.sendMessage = function(message) {
-      if (message) {
-        Messages.createMessage(conversation._id, message);
+    $scope.sendMessage = function(messageText) {
+      if (messageText) {
+        Messages.createMessage(conversation, messageText);
         $scope.message = "";
         $ionicScrollDelegate.scrollBottom();
       }

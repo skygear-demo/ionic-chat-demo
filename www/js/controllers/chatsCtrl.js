@@ -21,21 +21,21 @@ angular.module('app.controllers.chatsCtrl', [])
     }).then(function(modal) {
       $scope.modal = modal;
     });
-    
+
     // When a user is selected from the above modal, we will navigate
     // to that conversation immediately after successful creation.
     $scope.selectUser = function(user) {
       $ionicLoading.show({
         template: 'Creating direct conversation...'
       });
-      Conversations.createDirectConversation(user._id)
-      .then(function(userConversation) {
-        $ionicLoading.hide();
-        $scope.modal.hide();
-        $state.go('tabsController.chat', {
-          id: userConversation.$transient.conversation._id
+      Conversations.createDirectConversation(user, user.name)
+        .then(function(userConversation) {
+          $ionicLoading.hide();
+          $scope.modal.hide();
+          $state.go('tabsController.chat', {
+            id: userConversation.$transient.conversation._id
+          });
         });
-      });
     };
 
     $scope.createDirectConversation = function() {
@@ -66,7 +66,7 @@ angular.module('app.controllers.chatsCtrl', [])
         $scope.$apply();
       });
     });
-    
+
     // Navigate to the conversation
     $scope.goToChat = function(conversationId) {
       $state.go('tabsController.chat', {
