@@ -16,7 +16,7 @@ angular.module('app.controllers.groupCtrl', [])
     $scope.conversations = Messages.conversations;
 
     $scope.conversation = conversation;
-    $scope.conversationId = conversation._id;
+    $scope.conversationId = conversation.id;
     $scope.currentUser = Skygear.currentUser;
     $scope.users = Users.users;
 

@@ -21,7 +21,7 @@ angular.module('app.services.conversations', [])
     };
 
     const cache = function(conversation) {
-      conversations[conversation._id] = conversation;
+      conversations[conversation.id] = conversation;
     };
 
     // helper function for getting the other user id from a direct
@@ -163,7 +163,6 @@ angular.module('app.services.conversations', [])
       // Update unread count of a conversation, usually called with 0 count
       // when a user start reading a conversation.
       setUnreadCount: function(conversationId, count) {
-        conversationId = 'conversation/' + conversationId;
         setUnreadCount(conversationId, count);
       },
 
@@ -205,8 +204,7 @@ angular.module('app.services.conversations', [])
       // This function will set unread count of a user conversation if current
       // user is not reading that conversation.
       onMessageCreated: function(message) {
-        console.log('conversation', message);
-        const conversationId = message.conversation_id.id.split('/')[1];
+        const conversationId = message.conversation_id.id;
         const conversation = conversations[conversationId];
         SkygearChat.getUnreadMessageCount(conversation)
           .then(function(unreadMessageCount) {
