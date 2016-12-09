@@ -50,7 +50,7 @@ angular.module('app.controllers.groupCtrl', [])
       $ionicLoading.show({
         template: 'Adding user to this group...'
       });
-      Conversations.addParticipant($scope.conversationId, user._id)
+      Conversations.addParticipant($scope.conversation, user)
       .then(function() {
         $ionicLoading.hide();
         $scope.modal.hide();

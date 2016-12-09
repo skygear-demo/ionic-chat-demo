@@ -133,8 +133,8 @@ angular.module('app.services.conversations', [])
       },
 
       // Add user to a conversation
-      addParticipant: function(conversationId, userId) {
-        return SkygearChat.addParticipants(conversationId, [userId])
+      addParticipant: function(c, user) {
+        return SkygearChat.addParticipants(c, [user])
         .then(function(conversation) {
           console.log('Add participant success', conversation);
           cache(conversation);
