@@ -12,6 +12,13 @@ angular.module('app.services.users', [])
     return {
       users: users,
 
+      // This intent to return user already exsit by fullID.
+      // Assuming the controller already take care of the pre-loading
+      getByID: function(fullID) {
+        const _id = fullID.split('/')[1];
+        return users[_id];
+      },
+
       // Fetch user given user id
       fetchUser: function(userId) {
         var deferred = $q.defer();

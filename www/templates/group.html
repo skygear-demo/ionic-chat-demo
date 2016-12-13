@@ -10,6 +10,9 @@
                 <h6>from {{users[m.createdBy].name}}</h6>
             </ion-item>
         </ion-list>
+        <p ng-if="typingUsers.typing"><small>
+          {{typingUsers.typing}} are typing...
+        </small></p>
     </ion-content>
     <form id="group-form3" class="message-input">
         <label class="item item-input" id="group-input7">

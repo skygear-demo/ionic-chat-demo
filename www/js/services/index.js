@@ -1,4 +1,5 @@
 angular.module('app.services', [
+  'app.services.typing',
   'app.services.conversations',
   'app.services.messages',
   'app.services.skygear',

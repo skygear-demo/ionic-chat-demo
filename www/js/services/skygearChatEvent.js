@@ -7,8 +7,8 @@ angular.module('app.services.skygearChatEvent', [])
  * them to Messages and Conversations factory repectively.
  */
 .factory('SkygearChatEvent', [
-  'SkygearChat', 'Conversations', 'Messages', 'Users', '$rootScope',
-  function(SkygearChat, Conversations, Messages, Users, $rootScope) {
+  'SkygearChat', 'Conversations', 'Messages', 'Typing', 'Users', '$rootScope',
+  function(SkygearChat, Conversations, Messages, Typing, Users, $rootScope) {
     const handler = function(data) {
       console.log('Skygear chat event received', data);
       if (data.record_type === 'message') {
@@ -28,10 +28,19 @@ angular.module('app.services.skygearChatEvent', [])
       }
     };
 
+    typingHandler = function(data) {
+      angular.forEach(data, function (t, conversationID) {
+        Typing.onTyping(conversationID, t);
+      });
+      // To apply non-UI trigger changes.
+      $rootScope.$apply();
+    };
+
     return {
       // Entry point of starting event subscription
       subscribe: function() {
         SkygearChat.subscribe(handler);
+        SkygearChat.subscribeAllTypingIndicator(typingHandler);
       }
     };
   }

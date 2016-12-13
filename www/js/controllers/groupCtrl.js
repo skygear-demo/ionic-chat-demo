@@ -6,8 +6,10 @@ angular.module('app.controllers.groupCtrl', [])
 .controller('groupCtrl', [
   '$scope', 'SkygearChat', 'Skygear', '$ionicModal', '$ionicScrollDelegate',
   'conversation', 'Messages', 'Users', 'Conversations', '$ionicLoading',
+  'Typing',
   function($scope, SkygearChat, Skygear, $ionicModal, $ionicScrollDelegate,
-           conversation, Messages, Users, Conversations, $ionicLoading) {
+           conversation, Messages, Users, Conversations, $ionicLoading,
+           Typing) {
     // Bind message cached to the view
     Messages.fetchMessages(conversation)
     .then(function() {
@@ -19,6 +21,7 @@ angular.module('app.controllers.groupCtrl', [])
     $scope.conversationId = conversation.id;
     $scope.currentUser = Skygear.currentUser;
     $scope.users = Users.users;
+    $scope.typingUsers = Typing.getByConversation(conversation.id);
 
     $scope.sendMessage = function(messageText) {
       if (messageText) {
@@ -27,6 +30,18 @@ angular.module('app.controllers.groupCtrl', [])
         $ionicScrollDelegate.scrollBottom();
       }
     };
+
+    $scope.$watch('message', function (newValue, oldValue) {
+      if (newValue) {
+        Typing.begin(conversation);
+      } else {
+        Typing.finished(conversation);
+      };
+    });
+
+    $scope.$on("$destroy", function() {
+      Typing.finished(conversation);
+    });
 
     $scope.closeModal = function() {
       $scope.modal.hide();

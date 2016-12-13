@@ -5,9 +5,9 @@ angular.module('app.controllers.chatCtrl', [])
  */
 .controller('chatCtrl', [
   '$scope', 'Skygear', '$ionicScrollDelegate', 'user', 'conversation',
-  'Messages',
+  'Messages', 'Typing',
   function($scope, Skygear, $ionicScrollDelegate, user, conversation,
-            Messages) {
+            Messages, Typing) {
     // Fetch all messages of this direct conversation and
     // bind it to our view
     Messages.fetchMessages(conversation)
@@ -18,6 +18,7 @@ angular.module('app.controllers.chatCtrl', [])
     $scope.conversationId = conversation.id;
     $scope.currentUser = Skygear.currentUser;
     $scope.user = user;
+    $scope.typingUsers = Typing.getByConversation(conversation.id);
 
     $scope.sendMessage = function(messageText) {
       if (messageText) {
@@ -26,5 +27,17 @@ angular.module('app.controllers.chatCtrl', [])
         $ionicScrollDelegate.scrollBottom();
       }
     };
+
+    $scope.$watch('message', function (newValue, oldValue) {
+      if (newValue) {
+        Typing.begin(conversation);
+      } else {
+        Typing.finished(conversation);
+      };
+    });
+
+    $scope.$on("$destroy", function() {
+      Typing.finished(conversation);
+    });
   }
 ]);

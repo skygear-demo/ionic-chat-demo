@@ -6,6 +6,9 @@
                 <h6>{{m.createdAt | date:'yyyy-MM-dd HH:mm:ss'}}</h6>
             </ion-item>
         </ion-list>
+        <p ng-if="typingUsers.typing"><small>
+          {{typingUsers.typing}} are typing...
+        </small></p>
         <div class="spacer" style="width: 300px; height: 30px;"></div>
     </ion-content>
     <form id="chat-form4" class="message-input">
