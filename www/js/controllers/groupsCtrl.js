@@ -46,11 +46,13 @@ angular.module('app.controllers.groupsCtrl', [])
           return Conversations.createGroupConversation(res);
         }
       }).then(function(userConversation) {
-        $ionicLoading.hide();
-        $scope.newGroup.name = "";
-        $state.go('tabsController.group', {
-          id: userConversation.$transient.conversation._id
-        });
+        if (userConversation) {
+          $ionicLoading.hide();
+          $scope.newGroup.name = "";
+          $state.go('tabsController.group', {
+            id: userConversation._id
+          });
+        }
       });
     };
 

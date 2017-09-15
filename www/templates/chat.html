@@ -1,7 +1,7 @@
 <ion-view title="{{user.name}}" id="page6" shrink-when-keyboard-shows>
     <ion-content padding="true" class="has-header has-message-input" scroll-anchor>
         <ion-list id="chat-list4">
-            <ion-item class="chat-message" ng-repeat="m in conversations[conversationId]" ng-class="{'by-me': currentUser.id === m.createdBy, 'in-progress': m.inProgress}">
+            <ion-item class="chat-message" ng-repeat="m in conversations[conversationId]" ng-class="{'by-me': currentUser._id === m.createdBy, 'in-progress': m.inProgress}">
                 {{m.body}}
                 <h6>{{m.createdAt | date:'yyyy-MM-dd HH:mm:ss'}}</h6>
             </ion-item>

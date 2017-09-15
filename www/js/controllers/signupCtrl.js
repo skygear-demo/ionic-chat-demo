@@ -15,13 +15,13 @@ angular.module('app.controllers.signupCtrl', [])
         template: 'Signing up...'
       });
 
-      Skygear.signupWithUsername(username, password)
+      Skygear.auth.signupWithUsername(username, password)
       .then(function(user) {
         console.log('Signup success', user);
 
         // Save display name of the user to user record
         var userProfile = new User({
-          _id: 'user/' + Skygear.currentUser.id,
+          _id: 'user/' + Skygear.auth.currentUser._id,
           name: name
         });
         Skygear.publicDB.save(userProfile).then(function(profile) {

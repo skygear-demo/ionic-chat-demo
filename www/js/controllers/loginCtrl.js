@@ -15,7 +15,7 @@ angular.module('app.controllers.loginCtrl', [])
         template: 'Logging in...'
       });
 
-      Skygear.loginWithUsername(username, password)
+      Skygear.auth.loginWithUsername(username, password)
       .then(function(user) {
         console.log('Login success', user);
         Conversations.fetchConversations()

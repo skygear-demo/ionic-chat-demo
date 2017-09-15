@@ -50,7 +50,7 @@ angular.module('app.services.typing', [])
         let names = typingUsers.names;
         angular.forEach(payload, function (s, id) {
           const user = Users.getByID(id);
-          if (user._id === skygear.currentUser.id) {
+          if (user._id === skygear.auth.currentUser._id) {
             return;
           }
           const i = names.indexOf(user.name);

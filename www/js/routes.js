@@ -64,7 +64,7 @@ angular.module('app.routes', ['ionicUIRouter'])
         resolve: {
           user: function($stateParams, conversation, Users, Skygear) {
             var otherUserId = conversation.participant_ids.filter(function(p) {
-              return p !== Skygear.currentUser.id;
+              return p !== Skygear.auth.currentUser._id;
             })[0];
             return Users.fetchUser(otherUserId);
           },
