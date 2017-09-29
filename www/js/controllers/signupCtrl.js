@@ -15,23 +15,13 @@ angular.module('app.controllers.signupCtrl', [])
         template: 'Signing up...'
       });
 
-      Skygear.signupWithUsername(username, password)
-      .then(function(user) {
+      Skygear.auth.signupWithUsername(username, password, {
+          name: name
+      }).then(function(user) {
         console.log('Signup success', user);
 
-        // Save display name of the user to user record
-        var userProfile = new User({
-          _id: 'user/' + Skygear.currentUser.id,
-          name: name
-        });
-        Skygear.publicDB.save(userProfile).then(function(profile) {
-          console.log('Save profile success', profile);
-          $ionicLoading.hide();
-          $state.go('tabsController.groups');
-        }, function(error) {
-          console.log('Save profile error', error);
-          alert(error.error.message);
-        });
+        $ionicLoading.hide();
+        $state.go('tabsController.groups');
       }, function(error) {
         console.log('Signup error', error);
         $ionicLoading.hide();

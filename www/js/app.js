@@ -21,7 +21,7 @@ angular.module('app', [
     // currentUser exists in Skygear SDK when user successfully logged in
     // using Skygear SDK. We check the existance of this attribute and
     // go to groups page directly.
-    if (Skygear.currentUser) {
+    if (Skygear.auth.currentUser) {
       Conversations.fetchConversations();
       $timeout(function() {
         $state.go('tabsController.groups');
@@ -34,8 +34,8 @@ angular.module('app', [
 // Config skygear with api end point and api key before angular bootstrapping
 // to ensure all components in angular work with skygear
 skygear.config({
-  endPoint: 'https://ionichat1.skygeario.com/',
-  apiKey: '1f9716a3c7c64ac39c03cfd6f911a5cf'
+  endPoint: 'https://chatdemoapp.skygeario.com/',
+  apiKey: 'c0d796f60a9649d78ade26e65c460459'
 }).then(function(client) {
   console.log('Skygear config success', client);
   angular.element(document).ready(function() {

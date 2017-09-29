@@ -17,8 +17,7 @@ angular.module('app.services.messages', [])
       // Getting messages of a conversation
       fetchMessages: function(conversation) {
         const deferred = $q.defer();
-        const conversationMessages = conversations[conversation.id];
-        console.log(conversations);
+        const conversationMessages = conversations[conversation._id];
         if (conversationMessages) {
           deferred.resolve(conversationMessages);
         }
@@ -26,18 +25,16 @@ angular.module('app.services.messages', [])
         .then(function(messages) {
           console.log('Plugin get messages success', messages);
 
-          conversations[conversation.id] = messages.results.reverse();
-          const lastMessageIndex = conversations[conversation.id].length - 1;
+          conversations[conversation._id] = messages.reverse();
+          const lastMessageIndex = conversations[conversation._id].length - 1;
 
-          const lastMessage = conversations[conversation.id][lastMessageIndex];
+          const lastMessage = conversations[conversation._id][lastMessageIndex];
           if (lastMessage) {
-            SkygearChat.markAsLastMessageRead(
-              conversation, lastMessage
-            );
+            SkygearChat.markAsRead([lastMessage]);
           }
 
           if (!conversationMessages) {
-            deferred.resolve(conversations[conversation.id]);
+            deferred.resolve(conversations[conversation._id]);
           }
         });
         return deferred.promise;
@@ -51,15 +48,15 @@ angular.module('app.services.messages', [])
         const _message = {
           body: body,
           createdAt: new Date(),
-          createdBy: Skygear.currentUser.id,
+          createdBy: Skygear.auth.currentUser._id,
           inProgress: true
         };
-        conversations[conversation.id].push(_message);
+        conversations[conversation._id].push(_message);
         return SkygearChat.createMessage(conversation, body)
         .then(function(message) {
           console.log('Create message success', message);
-          const index = conversations[conversation.id].indexOf(_message);
-          conversations[conversation.id][index] = message;
+          const index = conversations[conversation._id].indexOf(_message);
+          conversations[conversation._id][index] = message;
           $rootScope.$apply();
           return message;
         });
@@ -70,8 +67,8 @@ angular.module('app.services.messages', [])
       // the conversation it belongs to.
       onMessageCreated: function(message) {
         console.log('message on create', message);
-        const conversationId = message.conversation_id.id;
-        if (message.createdBy !== Skygear.currentUser.id &&
+        const conversationId = message.conversation._id.replace('conversation/', '');
+        if (message.createdBy !== Skygear.auth.currentUser._id &&
             conversations[conversationId]) {
           conversations[conversationId].push(message);
           $rootScope.$broadcast('new-message-received');

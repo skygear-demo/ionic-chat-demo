@@ -18,8 +18,8 @@ angular.module('app.controllers.groupCtrl', [])
     $scope.conversations = Messages.conversations;
 
     $scope.conversation = conversation;
-    $scope.conversationId = conversation.id;
-    $scope.currentUser = Skygear.currentUser;
+    $scope.conversationId = conversation._id;
+    $scope.currentUser = Skygear.auth.currentUser;
     $scope.users = Users.users;
     $scope.typingUsers = Typing.getByConversation(conversation.id);
 
@@ -80,7 +80,7 @@ angular.module('app.controllers.groupCtrl', [])
     // and display in the invite user modal
     $scope.$on('modal.shown', function() {
       var userIdExists = $scope.conversation.participant_ids
-      .concat([Skygear.currentUser.id]);
+      .concat([Skygear.auth.currentUser._id]);
       Users.fetchAllUsersExclude(userIdExists)
       .then(function(users) {
         $scope.inviteUsers = users;

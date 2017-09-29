@@ -4,7 +4,7 @@
     </ion-nav-buttons>
     <ion-content padding="true" class="has-header has-message-input" scroll-anchor>
         <ion-list id="group-list3">
-            <ion-item ng-repeat="m in conversations[conversation.id]" class="chat-message" ng-class="{'by-me': currentUser.id === m.createdBy, 'in-progress': m.inProgress}">
+            <ion-item ng-repeat="m in conversations[conversation._id]" class="chat-message" ng-class="{'by-me': currentUser._id === m.createdBy, 'in-progress': m.inProgress}">
                 {{m.body}}
                 <h6>{{m.createdAt | date: 'yyyy-MM-dd HH:mm:ss'}}</h6>
                 <h6>from {{users[m.createdBy].name}}</h6>
