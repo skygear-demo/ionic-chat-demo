@@ -34,8 +34,8 @@ angular.module('app', [
 // Config skygear with api end point and api key before angular bootstrapping
 // to ensure all components in angular work with skygear
 skygear.config({
-  endPoint: '<< Your Skygear End Point >>',
-  apiKey: '<< Your API Key >>'
+  endPoint: 'https://chatdemoapp.skygeario.com/',
+  apiKey: 'c0d796f60a9649d78ade26e65c460459'
 }).then(function(client) {
   console.log('Skygear config success', client);
   angular.element(document).ready(function() {
