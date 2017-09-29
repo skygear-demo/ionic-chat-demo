@@ -37,14 +37,14 @@ angular.module('app.services.conversations', [])
     // it function will find a user conversation from group and direct
     // conversation list
     const setUnreadCount = function(conversationId, count) {
-      conversations.groupConversations.forEach(function(userConversation) {
-        if (userConversation._id === conversationId) {
-          userConversation.unread_count = count;
+      conversations.groupConversations.forEach(function(_conversation) {
+        if (_conversation._id === conversationId) {
+          _conversation.unread_count = count;
         }
       });
-      conversations.directConversations.forEach(function(userConversation) {
-        if (userConversation._id === conversationId) {
-          userConversation.unread_count = count;
+      conversations.directConversations.forEach(function(_conversation) {
+        if (_conversation._id === conversationId) {
+          _conversation.unread_count = count;
         }
       });
     };
@@ -57,10 +57,10 @@ angular.module('app.services.conversations', [])
       // push user conversations to specific list.
       fetchConversations: function() {
         return SkygearChat.getConversations()
-        .then(function(userConversations) {
+        .then(function(_conversations) {
           // Categorize conversations into group conversation and direct
           // conversation
-          conversations.directConversations = userConversations
+          conversations.directConversations = _conversations
           .filter(function(uc) {
             return uc.distinct_by_participants && uc.participant_ids.length === 2;
           }).map(function(c) {
@@ -70,25 +70,25 @@ angular.module('app.services.conversations', [])
             return conversation;
           });
 
-          conversations.groupConversations = userConversations
+          conversations.groupConversations = _conversations
           .filter(function(uc) {
             return !uc.distinct_by_participants || uc.participant_ids.length !== 2;
           });
 
           $rootScope.$apply();
 
-          userConversations.forEach(function(c) {
+          _conversations.forEach(function(c) {
             cache(c);
           });
 
           // Fetch users at the same time
-          const users = userConversations.reduce(function(prev, curr) {
+          const users = _conversations.reduce(function(prev, curr) {
             return prev.concat(curr.participant_ids);
           }, []);
 
           return Users.fetchUsers(users)
           .then(function() {
-            return userConversations;
+            return _conversations;
           });
         });
       },
@@ -101,12 +101,12 @@ angular.module('app.services.conversations', [])
           deferred.resolve(conversation);
         } else {
           SkygearChat.getConversation(conversationId)
-          .then(function(userConversation) {
-            cache(userConversation);
+          .then(function(_conversation) {
+            cache(_conversation);
 
-            Users.fetchUsers(userConversation.participant_ids)
+            Users.fetchUsers(_conversation.participant_ids)
             .then(function() {
-              deferred.resolve(userConversation);
+              deferred.resolve(_conversation);
             });
           });
         }
@@ -120,9 +120,9 @@ angular.module('app.services.conversations', [])
         ).then(function(conversation) {
           cache(conversation);
           return SkygearChat.getConversation(conversation._id);
-        }).then(function(userConversation) {
-          conversations.groupConversations.push(userConversation);
-          return userConversation;
+        }).then(function(_conversation) {
+          conversations.groupConversations.push(_conversation);
+          return _conversation;
         }, function(err) {
           console.log('create Conversationfails', err);
         });
@@ -144,13 +144,13 @@ angular.module('app.services.conversations', [])
         return SkygearChat.createDirectConversation(user, title)
         .then(function(conversation) {
           return SkygearChat.getConversation(conversation._id);
-        }).then(function(userConversation) {
-          const conversation = userConversation;
+        }).then(function(_conversation) {
+          const conversation = _conversation;
           conversation.otherUserId = getOtherUserIdFromDirectConversation(
             conversation);
           cache(conversation);
-          conversations.directConversations.push(userConversation);
-          return userConversation;
+          conversations.directConversations.push(_conversation);
+          return _conversation;
         }, function(err) {
           console.log('createDirectConversation fails', err);
         });
@@ -166,8 +166,8 @@ angular.module('app.services.conversations', [])
       // event.
       onConversationUpdated: function(conversation) {
         SkygearChat.getConversation(conversation._id)
-        .then(function(userConversation) {
-          conversation = userConversation;
+        .then(function(_conversation) {
+          conversation = _conversation;
           if (conversation.ownerID === Skygear.auth.currentUser._id) {
             return;
           }
@@ -175,9 +175,9 @@ angular.module('app.services.conversations', [])
           if (conversation.is_direct_message) {
             conversation.otherUserId = getOtherUserIdFromDirectConversation(
               conversation);
-            conversations.directConversations.push(userConversation);
+            conversations.directConversations.push(_conversation);
           } else {
-            conversations.groupConversations.push(userConversation);
+            conversations.groupConversations.push(_conversation);
           }
           $rootScope.$apply();
         }, function(error) {

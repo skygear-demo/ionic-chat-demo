@@ -30,11 +30,11 @@ angular.module('app.controllers.chatsCtrl', [])
         template: 'Creating direct conversation...'
       });
       Conversations.createDirectConversation(user, user.name)
-        .then(function(userConversation) {
+        .then(function(_conversation) {
           $ionicLoading.hide();
           $scope.modal.hide();
           $state.go('tabsController.chat', {
-            id: userConversation._id
+            id: _conversation._id
           });
         });
     };
@@ -55,8 +55,8 @@ angular.module('app.controllers.chatsCtrl', [])
     // with current user
     $scope.$on('modal.shown', function() {
       var userIdExists = $scope.conversations.directConversations
-      .map(function(userConversation) {
-        return userConversation.participant_ids
+      .map(function(_conversation) {
+        return _conversation.participant_ids
         .filter(function(p) {
           return p !== Skygear.auth.currentUser._id;
         })[0];
